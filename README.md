@@ -77,6 +77,36 @@ pip install numpy matplotlib
 
 python edgeguard_integrated_dashboard.py
 
+## Screenshots
+
+### Motor Fault Classification
+
+The system visualizes four motor operating conditions:
+
+#### 1. Normal Condition
+![Normal Condition](screenshots/normal.png)
+
+#### 2. Bearing Fault
+![Bearing Fault](screenshots/bearing_fault.png)
+
+#### 3. Imbalance
+![Imbalance](screenshots/imbalance.png)
+
+#### 4. Misalignment
+![Misalignment](screenshots/misalignment.png)
+
+### Monitoring History
+
+#### Historical Monitoring Records
+![Monitoring History](screenshots/view_history.png)
+
+#### Detailed Monitoring History
+![Monitoring History Details](screenshots/view_history_details.png)
+
+### Analytics Dashboard
+
+![EdgeGuard Analytics](screenshots/analytics.png)
+
 Applications
 
 - Industrial motor condition monitoring
