@@ -13,6 +13,7 @@ from edgeguard_database import (
     save_reading,
     get_all_readings
 )
+from edgeguard_pdf_report import generate_pdf_report
 
 
 class EdgeGuardDashboard:
@@ -122,6 +123,16 @@ class EdgeGuardDashboard:
             font=("Arial", 10, "bold")
         )
         self.analytics_button.pack(side=tk.LEFT, padx=5)
+
+        self.pdf_button = tk.Button(
+            control_frame,
+            text="GENERATE PDF",
+            command=self.generate_pdf,
+            bg="#d29922",
+            fg="white",
+            font=("Arial", 10, "bold")
+        )
+        self.pdf_button.pack(side=tk.LEFT, padx=5)
 
         # Metrics section
 
@@ -364,7 +375,7 @@ class EdgeGuardDashboard:
             "EdgeGuard - Monitoring History"
         )
 
-        history_window.geometry("1050x450")
+        history_window.geometry("1400x500")
 
         tk.Label(
             history_window,
@@ -378,7 +389,10 @@ class EdgeGuardDashboard:
             "Selected",
             "Predicted",
             "RMS",
-            "Peak"
+            "Peak",
+            "Std Dev",
+            "Crest Factor",
+            "Harmonic Ratio"
         )
 
         table = ttk.Treeview(
@@ -386,6 +400,18 @@ class EdgeGuardDashboard:
             columns=columns,
             show="headings"
         )
+
+        column_widths = {
+            "ID": 55,
+            "Timestamp": 155,
+            "Selected": 105,
+            "Predicted": 105,
+            "RMS": 85,
+            "Peak": 85,
+            "Std Dev": 100,
+            "Crest Factor": 115,
+            "Harmonic Ratio": 120
+        }
 
         for column in columns:
 
@@ -396,8 +422,10 @@ class EdgeGuardDashboard:
 
             table.column(
                 column,
-                width=150,
-                anchor="center"
+                width=column_widths[column],
+                minwidth=column_widths[column],
+                anchor="center",
+                stretch=False
             )
 
         table.pack(
@@ -435,7 +463,10 @@ class EdgeGuardDashboard:
                     record[2],
                     record[3],
                     f"{record[4]:.4f}",
-                    f"{record[5]:.4f}"
+                    f"{record[5]:.4f}",
+                    f"{record[6]:.4f}",
+                    f"{record[7]:.4f}",
+                    f"{record[8]:.4f}"
                 )
             )
 
@@ -486,6 +517,32 @@ class EdgeGuardDashboard:
             f"{len(records)} records exported successfully!\n\n"
             f"File: {filename}"
         )
+
+    def generate_pdf(self):
+
+        records = get_all_readings()
+
+        if not records:
+            messagebox.showwarning(
+                "No Records",
+                "Start monitoring to collect readings first!"
+            )
+            return
+
+        try:
+            generate_pdf_report()
+
+            messagebox.showinfo(
+                "PDF Generated",
+                "EdgeGuard monitoring report generated successfully!\n\n"
+                "File: EdgeGuard_Monitoring_Report.pdf"
+            )
+
+        except Exception as error:
+            messagebox.showerror(
+                "PDF Generation Failed",
+                str(error)
+            )
 
     def show_analytics(self):
 

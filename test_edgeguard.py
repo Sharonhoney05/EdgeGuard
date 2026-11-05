@@ -7,6 +7,7 @@ import numpy as np
 import runpy
 import matplotlib
 matplotlib.use("Agg")
+import edgeguard_dashboard as dashboard
 import matplotlib.pyplot as plt
 import motor_fault_simulator
 
@@ -394,6 +395,132 @@ class TestEdgeGuard(unittest.TestCase):
         self.assertEqual(matrix[2, 1], 25)
         self.assertEqual(matrix[3, 1], 25)
         self.assertEqual(accuracy, 25.0)
+
+    def test_calculate_vibration_metrics(self):
+        rms, peak = dashboard.calculate_vibration_metrics(
+            [0.0, 2.0],
+            [0.0, 0.0],
+            [0.0, 0.0]
+        )
+
+        self.assertAlmostEqual(rms, 1.0)
+        self.assertAlmostEqual(peak, 1.0)
+
+    def test_classify_vibration_normal(self):
+        result = dashboard.classify_vibration(0.04)
+
+        self.assertEqual(result[0], "NORMAL")
+
+    def test_classify_vibration_warning(self):
+        result = dashboard.classify_vibration(0.10)
+
+        self.assertEqual(result[0], "WARNING")
+
+    def test_classify_vibration_abnormal(self):
+        result = dashboard.classify_vibration(0.25)
+
+        self.assertEqual(result[0], "ABNORMAL")
+    def test_classify_vibration_at_normal_boundary(self):
+        result = dashboard.classify_vibration(0.05)
+        self.assertEqual(result[0], "WARNING")
+
+    def test_classify_vibration_at_warning_boundary(self):
+        result = dashboard.classify_vibration(0.20)
+        self.assertEqual(result[0], "ABNORMAL")
+    def test_dashboard_reading_normal_phase(self):
+            with patch.object(dashboard.random, "uniform", return_value=0):
+                x, y, z = dashboard.generate_dashboard_reading(0, 0)
+
+            self.assertAlmostEqual(x, 0.0)
+            self.assertAlmostEqual(y, 0.02 * 0.7 * np.sin(1))
+            self.assertAlmostEqual(z, 1.0 + 0.02 * 0.5 * np.sin(2))
+
+    def test_dashboard_reading_warning_phase(self):
+        with patch.object(dashboard.random, "uniform", return_value=0):
+            x, y, z = dashboard.generate_dashboard_reading(100, 0)
+
+            self.assertAlmostEqual(x, 0.0)
+            self.assertAlmostEqual(y, 0.15 * 0.7 * np.sin(1))
+            self.assertAlmostEqual(z, 1.0 + 0.15 * 0.5 * np.sin(2))
+
+    def test_dashboard_reading_abnormal_phase(self):
+        with patch.object(dashboard.random, "uniform", return_value=0):
+                x, y, z = dashboard.generate_dashboard_reading(200, 0)
+
+        self.assertAlmostEqual(x, 0.0)
+        self.assertAlmostEqual(y, 0.40 * 0.7 * np.sin(1))
+        self.assertAlmostEqual(z, 1.0 + 0.40 * 0.5 * np.sin(2))
+
+    def test_monitoring_state_initially_running(self):
+        state = dashboard.MonitoringState()
+        self.assertTrue(state.running)
+
+    def test_monitoring_state_stop(self):
+        state = dashboard.MonitoringState()
+        state.stop()
+        self.assertFalse(state.running)
+
+    def test_monitoring_state_start(self):
+        state = dashboard.MonitoringState()
+        state.stop()
+
+        result = state.start()
+
+        self.assertTrue(result)
+        self.assertTrue(state.running)
+
+    def test_database_stores_all_reading_values(self):
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            original_database = database.DATABASE_NAME
+            database.DATABASE_NAME = os.path.join(
+                temp_dir, "test.db"
+            )
+
+            try:
+                database.create_database()
+
+                database.save_reading(
+                    "NORMAL",
+                    "NORMAL",
+                    0.05,
+                    0.10,
+                    0.03,
+                    2.0,
+                    0.01
+                )
+
+                records = database.get_all_readings()
+
+                self.assertEqual(len(records), 1)
+                self.assertEqual(records[0][2], "NORMAL")
+                self.assertEqual(records[0][3], "NORMAL")
+                self.assertAlmostEqual(records[0][4], 0.05)
+                self.assertAlmostEqual(records[0][5], 0.10)
+                self.assertAlmostEqual(records[0][6], 0.03)
+                self.assertAlmostEqual(records[0][7], 2.0)
+                self.assertAlmostEqual(records[0][8], 0.01)
+
+            finally:
+                database.DATABASE_NAME = original_database
+
+    def test_database_returns_empty_list(self):
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            original_database = database.DATABASE_NAME
+            database.DATABASE_NAME = os.path.join(
+                temp_dir, "empty.db"
+            )
+
+            try:
+                database.create_database()
+
+                records = database.get_all_readings()
+
+                self.assertEqual(records, [])
+
+            finally:
+                database.DATABASE_NAME = original_database
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
