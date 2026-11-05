@@ -1,0 +1,6 @@
+class,precision,recall,f1_score,support,accuracy
+NORMAL,1.0,1.0,1.0,25,
+IMBALANCE,1.0,1.0,1.0,25,
+MISALIGNMENT,1.0,1.0,1.0,25,
+BEARING FAULT,1.0,1.0,1.0,25,
+MACRO AVERAGE,1.0,1.0,1.0,100,1.0
