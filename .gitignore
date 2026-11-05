@@ -7,3 +7,4 @@ venv/
 edgeguard.db
 
 .coverage
+edgeguard_monitoring_report.csv
