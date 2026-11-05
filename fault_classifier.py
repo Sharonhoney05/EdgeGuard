@@ -42,45 +42,51 @@ def classify_fault(rms, peak, crest, harmonic_ratio):
         return "NORMAL"
 
 
-conditions = [
-    "NORMAL",
-    "IMBALANCE",
-    "MISALIGNMENT",
-    "BEARING FAULT"
-]
+def main():
 
-correct = 0
+    conditions = [
+        "NORMAL",
+        "IMBALANCE",
+        "MISALIGNMENT",
+        "BEARING FAULT"
+    ]
 
-print("\n====================================")
-print(" EDGEGUARD ADVANCED FAULT CLASSIFIER")
-print("====================================")
+    correct = 0
 
-for actual in conditions:
+    print("\n====================================")
+    print(" EDGEGUARD ADVANCED FAULT CLASSIFIER")
+    print("====================================")
 
-    t, signal, _, _, _ = generate_motor_data(actual)
+    for actual in conditions:
 
-    rms, peak, std_dev, crest, harmonic_ratio = (
-        extract_features(signal)
-    )
+        t, signal, _, _, _ = generate_motor_data(actual)
 
-    predicted = classify_fault(
-        rms, peak, crest, harmonic_ratio
-    )
+        rms, peak, std_dev, crest, harmonic_ratio = (
+            extract_features(signal)
+        )
 
-    print("\nActual condition:", actual)
-    print("Predicted condition:", predicted)
-    print("RMS:", round(rms, 4), "g")
-    print("Peak:", round(peak, 4), "g")
-    print("Crest factor:", round(crest, 4))
-    print("Harmonic ratio:", round(harmonic_ratio, 4))
+        predicted = classify_fault(
+            rms, peak, crest, harmonic_ratio
+        )
 
-    if actual == predicted:
-        print("Result: CORRECT")
-        correct += 1
-    else:
-        print("Result: INCORRECT")
+        print("\nActual condition:", actual)
+        print("Predicted condition:", predicted)
+        print("RMS:", round(rms, 4), "g")
+        print("Peak:", round(peak, 4), "g")
+        print("Crest factor:", round(crest, 4))
+        print("Harmonic ratio:", round(harmonic_ratio, 4))
 
-print("\n====================================")
-print("CLASSIFICATION SUMMARY")
-print("Correct:", correct, "/", len(conditions))
-print("====================================")
+        if actual == predicted:
+            print("Result: CORRECT")
+            correct += 1
+        else:
+            print("Result: INCORRECT")
+
+    print("\n====================================")
+    print("CLASSIFICATION SUMMARY")
+    print("Correct:", correct, "/", len(conditions))
+    print("====================================")
+
+
+if __name__ == "__main__":
+    main()

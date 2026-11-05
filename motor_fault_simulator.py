@@ -2,6 +2,7 @@ import numpy as np
 
 SAMPLE_COUNT = 1000
 
+
 def generate_motor_data(condition):
     t = np.arange(SAMPLE_COUNT) / 100
 
@@ -38,17 +39,19 @@ def generate_motor_data(condition):
     return t, signal, rms, peak, std_dev
 
 
-conditions = [
-    "NORMAL",
-    "IMBALANCE",
-    "MISALIGNMENT",
-    "BEARING FAULT"
-]
+if __name__ == "__main__":
 
-for condition in conditions:
-    t, signal, rms, peak, std_dev = generate_motor_data(condition)
+    conditions = [
+        "NORMAL",
+        "IMBALANCE",
+        "MISALIGNMENT",
+        "BEARING FAULT"
+    ]
 
-    print("\nMotor condition:", condition)
-    print("RMS:", round(float(rms), 4), "g")
-    print("Peak:", round(float(peak), 4), "g")
-    print("Standard deviation:", round(float(std_dev), 4), "g")
+    for condition in conditions:
+        t, signal, rms, peak, std_dev = generate_motor_data(condition)
+
+        print("\nMotor condition:", condition)
+        print("RMS:", round(float(rms), 4), "g")
+        print("Peak:", round(float(peak), 4), "g")
+        print("Standard deviation:", round(float(std_dev), 4), "g")
