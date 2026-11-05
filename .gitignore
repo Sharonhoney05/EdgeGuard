@@ -5,3 +5,5 @@ venv/
 .env
 .vscode/
 edgeguard.db
+
+.coverage
