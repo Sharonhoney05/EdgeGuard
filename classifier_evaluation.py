@@ -14,92 +14,90 @@ conditions = [
 
 samples_per_condition = 25
 
-confusion_matrix = np.zeros((4, 4), dtype=int)
 
-correct = 0
-total = 0
+def run_evaluation():
 
-print("\n======================================")
-print(" EDGEGUARD CLASSIFIER EVALUATION")
-print("======================================")
+    confusion_matrix = np.zeros((4, 4), dtype=int)
 
-for actual_index, actual in enumerate(conditions):
+    correct = 0
+    total = 0
 
-    for sample in range(samples_per_condition):
+    print("\n======================================")
+    print(" EDGEGUARD CLASSIFIER EVALUATION")
+    print("======================================")
 
-        # Generate a fresh simulated motor signal
-        t, signal, _, _, _ = generate_motor_data(actual)
+    for actual_index, actual in enumerate(conditions):
 
-        # Extract vibration and frequency features
-        rms, peak, std_dev, crest, harmonic_ratio = (
-            extract_features(signal)
-        )
+        for sample in range(samples_per_condition):
 
-        # Predict motor condition
-        predicted = classify_fault(
-            rms, peak, crest, harmonic_ratio
-        )
+            t, signal, _, _, _ = generate_motor_data(actual)
 
-        predicted_index = conditions.index(predicted)
+            rms, peak, std_dev, crest, harmonic_ratio = (
+                extract_features(signal)
+            )
 
-        confusion_matrix[actual_index, predicted_index] += 1
+            predicted = classify_fault(
+                rms, peak, crest, harmonic_ratio
+            )
 
-        total += 1
+            predicted_index = conditions.index(predicted)
 
-        if actual == predicted:
-            correct += 1
+            confusion_matrix[actual_index, predicted_index] += 1
+
+            total += 1
+
+            if actual == predicted:
+                correct += 1
+
+    accuracy = (correct / total) * 100
+
+    print("\nTotal samples tested:", total)
+    print("Correct predictions:", correct)
+    print("Incorrect predictions:", total - correct)
+    print("Classification accuracy:", round(accuracy, 2), "%")
+
+    print("\nCONFUSION MATRIX")
+    print("Rows = Actual | Columns = Predicted")
+
+    print("\n", confusion_matrix)
+
+    print("\nCLASS-WISE RESULTS")
+
+    for i, condition in enumerate(conditions):
+
+        class_total = np.sum(confusion_matrix[i])
+        class_correct = confusion_matrix[i, i]
+
+        class_accuracy = (class_correct / class_total) * 100
+
+        print(condition, ":", round(class_accuracy, 2), "%")
+
+    plt.figure(figsize=(8, 6))
+
+    plt.imshow(confusion_matrix, cmap="Blues")
+
+    plt.title("EdgeGuard - Confusion Matrix")
+    plt.xlabel("Predicted Condition")
+    plt.ylabel("Actual Condition")
+
+    plt.xticks(range(4), conditions, rotation=20)
+    plt.yticks(range(4), conditions)
+
+    for i in range(4):
+        for j in range(4):
+            plt.text(
+                j, i,
+                confusion_matrix[i, j],
+                ha="center",
+                va="center"
+            )
+
+    plt.colorbar(label="Number of Samples")
+    plt.tight_layout()
+    plt.show()
+
+    return confusion_matrix, accuracy
 
 
-accuracy = (correct / total) * 100
-
-print("\nTotal samples tested:", total)
-print("Correct predictions:", correct)
-print("Incorrect predictions:", total - correct)
-print("Classification accuracy:", round(accuracy, 2), "%")
-
-print("\nCONFUSION MATRIX")
-print("Rows = Actual | Columns = Predicted")
-
-print("\n", confusion_matrix)
-
-print("\nCLASS-WISE RESULTS")
-
-for i, condition in enumerate(conditions):
-
-    class_total = np.sum(confusion_matrix[i])
-    class_correct = confusion_matrix[i, i]
-
-    class_accuracy = (class_correct / class_total) * 100
-
-    print(
-        condition,
-        ":",
-        round(class_accuracy, 2),
-        "%"
-    )
-
-
-# Display confusion matrix
-plt.figure(figsize=(8, 6))
-
-plt.imshow(confusion_matrix, cmap="Blues")
-
-plt.title("EdgeGuard - Confusion Matrix")
-plt.xlabel("Predicted Condition")
-plt.ylabel("Actual Condition")
-
-plt.xticks(range(4), conditions, rotation=20)
-plt.yticks(range(4), conditions)
-
-for i in range(4):
-    for j in range(4):
-        plt.text(
-            j, i,
-            confusion_matrix[i, j],
-            ha="center",
-            va="center"
-        )
-
-plt.colorbar(label="Number of Samples")
-plt.tight_layout()
-plt.show()
+if __name__ == "__main__":
+    run_evaluation()

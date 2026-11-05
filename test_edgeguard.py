@@ -1,12 +1,22 @@
+import csv
+import edgeguard_export as exporter
 import unittest
 import tempfile
 import os
 import numpy as np
+import runpy
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import motor_fault_simulator
 
+import classifier_evaluation as evaluation
 import edgeguard_database as database
+import edgeguard_pdf_report as pdf_report
 
 from motor_fault_simulator import generate_motor_data
 from fault_classifier import extract_features, classify_fault
+from unittest.mock import patch
 
 
 class TestEdgeGuard(unittest.TestCase):
@@ -93,6 +103,297 @@ class TestEdgeGuard(unittest.TestCase):
             finally:
                 database.DATABASE_NAME = original_database
 
+    def test_csv_export(self):
+
+        records = [
+            (1, "2026-11-05 09:00:00", "NORMAL", "NORMAL",
+             0.015, 0.032, 0.015, 2.1, 0.01)
+        ]
+
+        original_directory = os.getcwd()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
+                os.chdir(temp_dir)
+
+                with patch.object(
+                    exporter, "get_all_readings", return_value=records
+                ):
+                    exporter.export_to_csv()
+
+                self.assertTrue(
+                    os.path.exists("edgeguard_monitoring_report.csv")
+                )
+
+                with open(
+                    "edgeguard_monitoring_report.csv",
+                    "r",
+                    newline=""
+                ) as file:
+                    rows = list(csv.reader(file))
+
+                self.assertEqual(len(rows), 2)
+                self.assertEqual(rows[0][0], "ID")
+                self.assertEqual(rows[1][0], "1")
+                self.assertEqual(rows[1][2], "NORMAL")
+                self.assertEqual(len(rows[0]), 9)
+                self.assertEqual(len(rows[1]), 9)
+                self.assertEqual(rows[1][3], "NORMAL")
+                self.assertEqual(rows[1][4], "0.015")
+
+            finally:
+                os.chdir(original_directory)
+
+    def test_csv_export_no_records(self):
+
+        original_directory = os.getcwd()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
+                os.chdir(temp_dir)
+
+                with patch.object(
+                    exporter, "get_all_readings", return_value=[]
+                ):
+                    exporter.export_to_csv()
+
+                self.assertFalse(
+                    os.path.exists("edgeguard_monitoring_report.csv")
+                )
+
+            finally:
+                os.chdir(original_directory)
+
+    def test_pdf_report_generation(self):
+
+        records = [
+            (1, "2026-11-05 09:00:00", "NORMAL", "NORMAL",
+             0.015, 0.032, 0.015, 2.1, 0.01),
+
+            (2, "2026-11-05 09:05:00", "IMBALANCE", "IMBALANCE",
+             0.025, 0.052, 0.025, 2.2, 0.02)
+        ]
+
+        original_directory = os.getcwd()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
+                os.chdir(temp_dir)
+
+                with patch.object(
+                    pdf_report,
+                    "get_all_readings",
+                    return_value=records.copy()
+                ):
+                    pdf_report.generate_pdf_report()
+
+                self.assertTrue(
+                    os.path.exists("EdgeGuard_Monitoring_Report.pdf")
+                )
+
+                self.assertGreater(
+                    os.path.getsize("EdgeGuard_Monitoring_Report.pdf"),
+                    0
+                )
+
+                with open("EdgeGuard_Monitoring_Report.pdf", "rb") as file:
+                    self.assertEqual(file.read(5), b"%PDF-")
+
+                self.assertFalse(
+                    os.path.exists("edgeguard_report_chart.png")
+                )
+
+            finally:
+                os.chdir(original_directory)
+
+    def test_pdf_report_no_records(self):
+
+        original_directory = os.getcwd()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
+                os.chdir(temp_dir)
+
+                with patch.object(
+                    pdf_report,
+                    "get_all_readings",
+                    return_value=[]
+                ):
+                    pdf_report.generate_pdf_report()
+
+                self.assertFalse(
+                    os.path.exists("EdgeGuard_Monitoring_Report.pdf")
+                )
+
+                self.assertFalse(
+                    os.path.exists("edgeguard_report_chart.png")
+                )
+
+            finally:
+                os.chdir(original_directory)
+
+    def test_fault_visualization(self):
+
+        t = np.linspace(0, 10, 1000)
+        signal = np.sin(2 * np.pi * t)
+
+        sample_data = (
+            t, signal, 0.5, 1.0, 0.3
+        )
+
+        with patch.object(
+            motor_fault_simulator,
+            "generate_motor_data",
+            return_value=sample_data
+        ) as mock_generator:
+
+            with patch.object(plt, "show") as mock_show:
+
+                runpy.run_module(
+                    "fault_visualization",
+                    run_name="__main__"
+                )
+
+                self.assertEqual(mock_generator.call_count, 4)
+                mock_show.assert_called_once()
+
+                fig = plt.gcf()
+
+                self.assertEqual(len(fig.axes), 8)
+
+                titles = [
+                    axis.get_title()
+                    for axis in fig.axes
+                ]
+
+                self.assertEqual(len(titles), 8)
+
+                self.assertTrue(
+                    any("Vibration Signal" in title for title in titles)
+                )
+
+                self.assertTrue(
+                    any("Frequency Spectrum" in title for title in titles)
+                )
+
+                plt.close(fig)
+
+    def test_database_creation_twice(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = os.path.join(temp_dir, "test.db")
+
+            with patch.object(database, "DATABASE_NAME", db_path):
+                database.create_database()
+                database.create_database()
+
+                connection = database.sqlite3.connect(db_path)
+                cursor = connection.cursor()
+
+                cursor.execute("""
+                    SELECT name FROM sqlite_master
+                    WHERE type='table' AND name='motor_readings'
+                """)
+
+                result = cursor.fetchone()
+                connection.close()
+
+                self.assertIsNotNone(result)
+
+    def test_database_readings_order(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            db_path = os.path.join(temp_dir, "test.db")
+
+            with patch.object(database, "DATABASE_NAME", db_path):
+                database.create_database()
+
+                database.save_reading(
+                    "NORMAL", "NORMAL", 0.1, 0.2, 0.05, 1.5, 0.01
+                )
+
+                database.save_reading(
+                    "IMBALANCE", "IMBALANCE", 0.3, 0.5, 0.1, 2.0, 0.03
+                )
+
+                readings = database.get_all_readings()
+
+                self.assertEqual(len(readings), 2)
+                self.assertEqual(readings[0][2], "IMBALANCE")
+                self.assertEqual(readings[1][2], "NORMAL")
+
+    def test_classifier_evaluation(self):
+
+        sample_data = (
+            np.linspace(0, 1, 1000),
+            np.sin(np.linspace(0, 10, 1000)),
+            0.1, 0.2, 0.05
+        )
+
+        with patch.object(
+            evaluation,
+            "generate_motor_data",
+            return_value=sample_data
+        ):
+
+            with patch.object(
+                evaluation,
+                "extract_features",
+                return_value=(0.1, 0.2, 0.05, 2.0, 0.01)
+            ):
+
+                with patch.object(
+                    evaluation,
+                    "classify_fault",
+                    side_effect=[
+                        condition
+                        for condition in evaluation.conditions
+                        for _ in range(evaluation.samples_per_condition)
+                    ]
+                ):
+
+                    with patch.object(plt, "show"):
+
+                        matrix, accuracy = evaluation.run_evaluation()
+
+        self.assertEqual(matrix.shape, (4, 4))
+        self.assertEqual(np.trace(matrix), 100)
+        self.assertEqual(np.sum(matrix), 100)
+        self.assertEqual(accuracy, 100.0)
+
+    def test_classifier_evaluation_confusion_matrix(self):
+
+        sample_data = (
+            np.linspace(0, 1, 1000),
+            np.sin(np.linspace(0, 10, 1000)),
+            0.1, 0.2, 0.05
+        )
+
+        with patch.object(
+            evaluation,
+            "generate_motor_data",
+            return_value=sample_data
+        ):
+
+            with patch.object(
+                evaluation,
+                "extract_features",
+                return_value=(0.1, 0.2, 0.05, 2.0, 0.01)
+            ):
+
+                with patch.object(
+                    evaluation,
+                    "classify_fault",
+                    side_effect=["IMBALANCE"] * 100
+                ):
+
+                    with patch.object(plt, "show"):
+
+                        matrix, accuracy = evaluation.run_evaluation()
+
+        self.assertEqual(matrix[0, 1], 25)
+        self.assertEqual(matrix[1, 1], 25)
+        self.assertEqual(matrix[2, 1], 25)
+        self.assertEqual(matrix[3, 1], 25)
+        self.assertEqual(accuracy, 25.0)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
