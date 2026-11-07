@@ -398,7 +398,8 @@ def main():
     # ---------------------------------
 
     print("\n====================================")
-    print(" RANDOM FOREST STRESS TEST")
+    print(" RULE-BASED vs RANDOM FOREST")
+    print(" NOISY STRESS TEST")
     print("====================================")
 
     print("Additional test noise standard deviation: 0.02")
@@ -413,20 +414,59 @@ def main():
         amplitude_range=(0.8, 1.2)
     )
 
-    stress_predictions = model.predict(X_stress)
+    # Random Forest predictions
+    stress_ml_predictions = model.predict(X_stress)
 
-    stress_results = evaluate_model(
+    # Rule-Based predictions on the SAME test samples
+    stress_rule_predictions = []
+
+    for row in X_stress:
+
+        rms, peak, std_dev, crest, harmonic_ratio = row
+
+        prediction = classify_fault(
+            rms,
+            peak,
+            crest,
+            harmonic_ratio
+        )
+
+        stress_rule_predictions.append(prediction)
+
+    print("\nEvaluating both classifiers on identical noisy data...")
+
+    stress_rule_results = evaluate_model(
+        "RULE-BASED - NOISY STRESS TEST",
+        y_stress,
+        stress_rule_predictions
+    )
+
+    stress_ml_results = evaluate_model(
         "RANDOM FOREST - NOISY STRESS TEST",
         y_stress,
-        stress_predictions
+        stress_ml_predictions
+    )
+
+    # Save both confusion matrices
+    save_confusion_matrix(
+        y_stress,
+        stress_ml_predictions,
+        filename="stress_confusion_matrix.png",
+        title="EdgeGuard - Random Forest Stress Test"
     )
 
     save_confusion_matrix(
         y_stress,
-        stress_predictions,
-        filename="stress_confusion_matrix.png",
-        title="EdgeGuard - Noisy Stress Test"
+        stress_rule_predictions,
+        filename="stress_rule_confusion_matrix.png",
+        title="EdgeGuard - Rule-Based Stress Test"
     )
+
+    # Save both stress-test results
+    stress_results = [
+        stress_rule_results,
+        stress_ml_results
+    ]
 
     with open(
         "stress_test_results.csv",
@@ -436,13 +476,57 @@ def main():
 
         writer = csv.DictWriter(
             file,
-            fieldnames=list(stress_results.keys())
+            fieldnames=[
+                "Model",
+                "Accuracy",
+                "Macro Precision",
+                "Macro Recall",
+                "Macro F1"
+            ]
         )
 
         writer.writeheader()
-        writer.writerow(stress_results)
+        writer.writerows(stress_results)
 
     print("Saved: stress_test_results.csv")
+
+    # Generate stress-test comparison chart
+    model_names = [
+        "Rule-Based",
+        "Random Forest"
+    ]
+
+    stress_accuracies = [
+        stress_rule_results["Accuracy"],
+        stress_ml_results["Accuracy"]
+    ]
+
+    plt.figure(figsize=(8, 5))
+
+    bars = plt.bar(
+        model_names,
+        stress_accuracies
+    )
+
+    plt.ylim(0, 105)
+    plt.ylabel("Accuracy (%)")
+    plt.xlabel("Classifier")
+    plt.title("EdgeGuard - Noisy Stress Test Comparison")
+
+    for bar, accuracy in zip(bars, stress_accuracies):
+
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 1,
+            f"{accuracy:.2f}%",
+            ha="center"
+        )
+
+    plt.tight_layout()
+    plt.savefig("stress_test_comparison.png", dpi=300)
+    plt.close()
+
+    print("Saved: stress_test_comparison.png")
 
     # ---------------------------------
     # FINAL SUMMARY
@@ -459,16 +543,30 @@ def main():
     )
 
     print(
-        "Baseline Test Accuracy:",
+        "Baseline Rule-Based Accuracy:",
+        round(rule_results["Accuracy"], 2),
+        "%"
+    )
+
+    print(
+        "Baseline Random Forest Accuracy:",
         round(ml_results["Accuracy"], 2),
         "%"
     )
 
     print(
-        "Noisy Stress Test Accuracy:",
-        round(stress_results["Accuracy"], 2),
+        "Noisy Rule-Based Accuracy:",
+        round(stress_rule_results["Accuracy"], 2),
         "%"
     )
+
+    print(
+        "Noisy Random Forest Accuracy:",
+        round(stress_ml_results["Accuracy"], 2),
+        "%"
+    )
+
+    print("\nBoth classifiers were tested on the same noisy samples.")
 
     print("\nAll experiments use synthetic vibration data.")
     print("Results do not establish real-world motor performance.")

@@ -105,30 +105,31 @@ RMS| 21.27%
 Harmonic Ratio| 18.47%
 Peak Amplitude| 14.22%
 
-"Random Forest Feature Importance" (feature_importance.png)
+"Random Forest Feature Importance" (results/feature_importance.png)
 
 These scores describe how the trained model used the features to split its training data. They do not establish causal relationships.
 
 6. Robustness and Stress Testing
 
-A separate stress dataset was generated to test the Random Forest model under more challenging simulated conditions.
+A separate stress dataset was generated to evaluate both classifiers under more challenging simulated conditions.
 
 Stress-Test Configuration
 
 - 400 additional samples: 100 per motor condition.
-- Additional Gaussian noise with standard deviation 0.02, added to the simulator's original noise.
+- Additional Gaussian noise with standard deviation 0.02.
 - Random amplitude scaling between 0.8x and 1.2x.
-- The model was trained on the baseline dataset and evaluated on the separately generated stress dataset.
+- Both classifiers evaluated on the same test samples.
+- Random Forest trained on the baseline dataset.
 
 Stress-Test Results
 
-Metric| Result
-Accuracy| 85.00%
-Macro Precision| 85.10%
-Macro Recall| 85.00%
-Macro F1-Score| 84.96%
+Metric| Rule-Based| Random Forest
+Accuracy| 100.00%| 85.00%
+Macro Precision| 100.00%| 85.10%
+Macro Recall| 100.00%| 85.00%
+Macro F1-Score| 100.00%| 84.96%
 
-Class-Wise Recall
+Class-Wise Recall (Random Forest)
 
 Condition| Recall
 Normal| 100%
@@ -136,11 +137,17 @@ Imbalance| 75%
 Misalignment| 65%
 Bearing Fault| 100%
 
-"Stress Test Confusion Matrix" (stress_confusion_matrix.png)
+"Stress Test Accuracy Comparison" (results/stress_test_comparison.png)
 
-The stress test shows that Normal and Bearing Fault patterns remained distinguishable in this experiment, while Imbalance and Misalignment were more difficult to separate under added noise and amplitude variation.
+"Random Forest Stress Test Confusion Matrix" (results/stress_confusion_matrix.png)
 
-This identifies a limitation of the current synthetic classifier rather than proving performance on physical motors.
+"Rule-Based Stress Test Confusion Matrix" (results/stress_rule_confusion_matrix.png)
+
+The Rule-Based classifier achieved 100% accuracy on this synthetic stress dataset, while Random Forest achieved 85%. The rule-based thresholds are designed around the simulated fault patterns, so this result does not establish superior real-world performance.
+
+The Random Forest model had difficulty distinguishing Imbalance and Misalignment under additional noise and amplitude variation.
+
+These results identify limitations and differences in the current synthetic experiment rather than proving performance on physical motors.
 
 7. Application Screenshots
 
@@ -179,7 +186,7 @@ Detailed Monitoring History
 8. Technology Stack
 
 Technology| Purpose
-Python 3.12.3| Core application development environment
+Python 3.12+| Core application development environment
 NumPy| Signal generation and numerical calculations
 Matplotlib| Charts, plots, and confusion matrices
 scikit-learn| Random Forest and model evaluation
@@ -238,60 +245,53 @@ GitHub Actions automatically runs the complete pytest suite:
 - On pushes to the "main" branch.
 - On pull requests targeting "main".
 - Using an Ubuntu environment.
-- Using Python 3.12.
+- Using Python 3.12+.
 - Installing dependencies from "requirements.txt".
-
-"EdgeGuard CI" (https://github.com/Sharonhoney05/EdgeGuard/actions/workflows/tests.yml/badge.svg)
 
 "View GitHub Actions Runs" (https://github.com/Sharonhoney05/EdgeGuard/actions)
 
 12. Project Structure
 
 EdgeGuard/
-│
 ├── .github/
 │   └── workflows/
 │       └── tests.yml
-│
-├── Day1/
-│
+├── examples/
+│   └── vibration_basics.py
+├── results/
+│   ├── confusion_matrix.png
+│   ├── cross_validation_results.csv
+│   ├── edgeguard_monitoring_report.csv
+│   ├── EdgeGuard_Monitoring_Report.pdf
+│   ├── evaluation_results.csv
+│   ├── feature_importance.png
+│   ├── ml_confusion_matrix.png
+│   ├── model_comparison.csv
+│   ├── robustness_comparison.png
+│   ├── robustness_results.csv
+│   ├── stress_confusion_matrix.png
+│   ├── stress_rule_confusion_matrix.png
+│   ├── stress_test_comparison.png
+│   └── stress_test_results.csv
 ├── screenshots/
-│   ├── analytics.png
-│   ├── bearing_fault.png
-│   ├── imbalance.png
-│   ├── misalignment.png
-│   ├── normal.png
-│   ├── view_history.png
-│   └── view_history_details.png
-│
 ├── classifier_evaluation.py
-├── confusion_matrix.png
-├── cross_validation_results.csv
-├── edgeguard.db
-├── edgeguard_dashboard.py
 ├── edgeguard_database.py
 ├── edgeguard_export.py
 ├── edgeguard_integrated_dashboard.py
 ├── edgeguard_ml_classifier.py
-├── edgeguard_monitoring_report.csv
-├── EdgeGuard_Monitoring_Report.pdf
 ├── edgeguard_pdf_report.py
 ├── edgeguard_robustness_test.py
-├── evaluation_results.csv
+├── edgeguard_dashboard.py
 ├── fault_classifier.py
 ├── fault_visualization.py
-├── feature_importance.png
-├── ml_confusion_matrix.png
-├── model_comparison.csv
 ├── motor_fault_simulator.py
-├── requirements.txt
-├── robustness_comparison.png
-├── robustness_results.csv
-├── stress_confusion_matrix.png
-├── stress_test_results.csv
 ├── test_edgeguard.py
+├── LICENSE
 ├── README.md
+├── requirements.txt
 └── .gitignore
+
+Note: "edgeguard_dashboard.py" is a standalone dashboard that generates simulated three-axis vibration data and displays vibration measurements and motor condition classifications.
 
 13. Limitations and Future Improvements
 
@@ -327,4 +327,6 @@ EdgeGuard is an academic simulation-based prototype developed for learning and e
 
 Reported metrics are from synthetic experiments and should not be interpreted as validated industrial diagnostic performance.
 
-License: No LICENSE file is currently included in this repository.
+License
+
+This project is licensed under the MIT License. See the "LICENSE" (LICENSE) file for details.
