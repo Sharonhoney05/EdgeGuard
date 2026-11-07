@@ -2,10 +2,10 @@
 
 A Python-based simulation prototype for vibration analysis, motor fault classification, machine learning evaluation, and predictive maintenance monitoring.
 
-"Python" (https://img.shields.io/badge/Python-3.x-blue)
-"Machine Learning" (https://img.shields.io/badge/Machine%20Learning-Random%20Forest-orange)
-"Testing" (https://img.shields.io/badge/Tests-27%20Passed-brightgreen)
-"Project" (https://img.shields.io/badge/Project-Simulation%20Based-purple)
+![Python](https://img.shields.io/badge/Python-3.x-blue)
+![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Random%20Forest-orange)
+![EdgeGuard CI](https://github.com/Sharonhoney05/EdgeGuard/actions/workflows/tests.yml/badge.svg)
+![Project](https://img.shields.io/badge/Project-Simulation%20Based-purple)
 
 Overview
 
