@@ -8,3 +8,6 @@ edgeguard.db
 
 .coverage
 edgeguard_monitoring_report.csv
+
+*.db
+.pytest_cache/
