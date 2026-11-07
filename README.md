@@ -1,14 +1,14 @@
-EdgeGuard – Motor Fault Detection and Monitoring System
+﻿# EdgeGuard â€“ Motor Fault Detection and Monitoring System
 
-"EdgeGuard CI" (https://github.com/Sharonhoney05/EdgeGuard/actions/workflows/tests.yml/badge.svg)
+[![EdgeGuard CI](https://github.com/Sharonhoney05/EdgeGuard/actions/workflows/tests.yml/badge.svg)](https://github.com/Sharonhoney05/EdgeGuard/actions/workflows/tests.yml)
 
-«Simulation Disclaimer: All results in this project are generated using simulated motor vibration signals. The system has not been validated using measurements from real motors.»
+> **Simulation Disclaimer:** All results in this project are generated using simulated motor vibration signals. The system has not been validated using measurements from real motors.
 
 EdgeGuard is a Python-based motor condition monitoring prototype that analyzes vibration signals to classify four operating conditions: Normal, Imbalance, Misalignment, and Bearing Fault.
 
 It combines signal generation, feature extraction, rule-based classification, machine learning, robustness evaluation, dashboards, database storage, reporting, and automated testing.
 
-1. Key Features
+## 1. Key Features
 
 - Synthetic motor vibration signal generation.
 - Statistical and frequency-domain feature extraction.
@@ -23,7 +23,7 @@ It combines signal generation, feature extraction, rule-based classification, ma
 - Automated testing with pytest.
 - GitHub Actions continuous integration.
 
-2. System Workflow
+## 2. System Workflow
 
 1. Generate synthetic vibration signals for four motor conditions.
 2. Extract five signal features: RMS, peak amplitude, standard deviation, crest factor, and harmonic ratio.
@@ -33,7 +33,7 @@ It combines signal generation, feature extraction, rule-based classification, ma
 6. Display monitoring results and history through the dashboard.
 7. Export monitoring information to CSV and PDF reports.
 
-3. Classification Methods
+## 3. Classification Methods
 
 3.1 Rule-Based Classifier
 
@@ -78,7 +78,7 @@ Train/test split| 80:20, stratified
 Random state| 42
 Class weighting| Balanced
 
-4. Baseline Evaluation and Cross-Validation
+## 4. Baseline Evaluation and Cross-Validation
 
 The baseline dataset contains 800 synthetic samples, with 200 samples per motor condition.
 
@@ -94,7 +94,7 @@ The five-fold stratified cross-validation is performed on the training portion o
 
 Interpretation: The perfect baseline scores reflect the clearly separated patterns used by this simulator. They do not establish real-world diagnostic accuracy. The stress test below provides a more challenging evaluation of the trained Random Forest model.
 
-5. Feature Importance
+## 5. Feature Importance
 
 The Random Forest model produced the following impurity-based feature importance scores:
 
@@ -109,7 +109,7 @@ Peak Amplitude| 14.22%
 
 These scores describe how the trained model used the features to split its training data. They do not establish causal relationships.
 
-6. Robustness and Stress Testing
+## 6. Robustness and Stress Testing
 
 A separate stress dataset was generated to evaluate both classifiers under more challenging simulated conditions.
 
@@ -149,7 +149,7 @@ The Random Forest model had difficulty distinguishing Imbalance and Misalignment
 
 These results identify limitations and differences in the current synthetic experiment rather than proving performance on physical motors.
 
-7. Application Screenshots
+## 7. Application Screenshots
 
 7.1 Motor Condition Detection
 
@@ -183,7 +183,7 @@ Detailed Monitoring History
 
 "Detailed Monitoring History" (screenshots/view_history_details.png)
 
-8. Technology Stack
+## 8. Technology Stack
 
 Technology| Purpose
 Python 3.12+| Core application development environment
@@ -196,7 +196,7 @@ ReportLab| PDF report generation
 pytest| Automated testing
 GitHub Actions| Continuous integration
 
-9. Installation and Setup
+## 9. Installation and Setup
 
 Prerequisites: Python 3.12 or later and Git.
 
@@ -212,7 +212,7 @@ Step 3: Install Dependencies
 
 python -m pip install -r requirements.txt
 
-10. Running the Project
+## 10. Running the Project
 
 Run the integrated monitoring dashboard:
 
@@ -230,7 +230,7 @@ Run the separate robustness experiment:
 
 python edgeguard_robustness_test.py
 
-11. Automated Testing and Continuous Integration
+## 11. Automated Testing and Continuous Integration
 
 Run the complete local test suite:
 
@@ -250,50 +250,50 @@ GitHub Actions automatically runs the complete pytest suite:
 
 "View GitHub Actions Runs" (https://github.com/Sharonhoney05/EdgeGuard/actions)
 
-12. Project Structure
+## 12. Project Structure
 
 EdgeGuard/
-├── .github/
-│   └── workflows/
-│       └── tests.yml
-├── examples/
-│   └── vibration_basics.py
-├── results/
-│   ├── confusion_matrix.png
-│   ├── cross_validation_results.csv
-│   ├── edgeguard_monitoring_report.csv
-│   ├── EdgeGuard_Monitoring_Report.pdf
-│   ├── evaluation_results.csv
-│   ├── feature_importance.png
-│   ├── ml_confusion_matrix.png
-│   ├── model_comparison.csv
-│   ├── robustness_comparison.png
-│   ├── robustness_results.csv
-│   ├── stress_confusion_matrix.png
-│   ├── stress_rule_confusion_matrix.png
-│   ├── stress_test_comparison.png
-│   └── stress_test_results.csv
-├── screenshots/
-├── classifier_evaluation.py
-├── edgeguard_database.py
-├── edgeguard_export.py
-├── edgeguard_integrated_dashboard.py
-├── edgeguard_ml_classifier.py
-├── edgeguard_pdf_report.py
-├── edgeguard_robustness_test.py
-├── edgeguard_dashboard.py
-├── fault_classifier.py
-├── fault_visualization.py
-├── motor_fault_simulator.py
-├── test_edgeguard.py
-├── LICENSE
-├── README.md
-├── requirements.txt
-└── .gitignore
+â”œâ”€â”€ .github/
+â”‚   â””â”€â”€ workflows/
+â”‚       â””â”€â”€ tests.yml
+â”œâ”€â”€ examples/
+â”‚   â””â”€â”€ vibration_basics.py
+â”œâ”€â”€ results/
+â”‚   â”œâ”€â”€ confusion_matrix.png
+â”‚   â”œâ”€â”€ cross_validation_results.csv
+â”‚   â”œâ”€â”€ edgeguard_monitoring_report.csv
+â”‚   â”œâ”€â”€ EdgeGuard_Monitoring_Report.pdf
+â”‚   â”œâ”€â”€ evaluation_results.csv
+â”‚   â”œâ”€â”€ feature_importance.png
+â”‚   â”œâ”€â”€ ml_confusion_matrix.png
+â”‚   â”œâ”€â”€ model_comparison.csv
+â”‚   â”œâ”€â”€ robustness_comparison.png
+â”‚   â”œâ”€â”€ robustness_results.csv
+â”‚   â”œâ”€â”€ stress_confusion_matrix.png
+â”‚   â”œâ”€â”€ stress_rule_confusion_matrix.png
+â”‚   â”œâ”€â”€ stress_test_comparison.png
+â”‚   â””â”€â”€ stress_test_results.csv
+â”œâ”€â”€ screenshots/
+â”œâ”€â”€ classifier_evaluation.py
+â”œâ”€â”€ edgeguard_database.py
+â”œâ”€â”€ edgeguard_export.py
+â”œâ”€â”€ edgeguard_integrated_dashboard.py
+â”œâ”€â”€ edgeguard_ml_classifier.py
+â”œâ”€â”€ edgeguard_pdf_report.py
+â”œâ”€â”€ edgeguard_robustness_test.py
+â”œâ”€â”€ edgeguard_dashboard.py
+â”œâ”€â”€ fault_classifier.py
+â”œâ”€â”€ fault_visualization.py
+â”œâ”€â”€ motor_fault_simulator.py
+â”œâ”€â”€ test_edgeguard.py
+â”œâ”€â”€ LICENSE
+â”œâ”€â”€ README.md
+â”œâ”€â”€ requirements.txt
+â””â”€â”€ .gitignore
 
 Note: "edgeguard_dashboard.py" is a standalone dashboard that generates simulated three-axis vibration data and displays vibration measurements and motor condition classifications.
 
-13. Limitations and Future Improvements
+## 13. Limitations and Future Improvements
 
 Current Limitations
 
@@ -310,14 +310,14 @@ Future Improvements
 - Evaluate performance across different motor speeds and operating loads.
 - Develop real-time sensor-based monitoring and alerts.
 
-14. Author
+## 14. Author
 
 F K Sharon
 
 Electronics and Communication Engineering
 BITM Ballari | 2027
 
-Project: EdgeGuard – Motor Fault Detection and Monitoring System
+Project: EdgeGuard â€“ Motor Fault Detection and Monitoring System
 
 "GitHub Repository" (https://github.com/Sharonhoney05/EdgeGuard)
 
