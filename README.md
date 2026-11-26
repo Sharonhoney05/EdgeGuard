@@ -8,6 +8,26 @@ The project combines signal processing, rule-based fault classification, machine
 
 > **Note:** This project currently uses simulated motor vibration signals. Results are experimental and have not been validated using measurements from physical motors.
 
+## Dashboard Preview
+
+![EdgeGuard Motor Monitoring Dashboard](screenshots/normal.png)
+
+*EdgeGuard monitoring dashboard showing simulated vibration signals, extracted metrics, predicted motor condition, and frequency spectrum.*
+
+## Results at a Glance
+
+| Evaluation Metric | Rule-Based Classifier | Random Forest |
+|---|---:|---:|
+| Baseline Accuracy | 100.00% | 100.00% |
+| Baseline Macro F1-Score | 100.00% | 100.00% |
+| Noisy Stress Test Accuracy | 100.00% | 96.25% |
+| Robustness Average Accuracy | 95.28% | 100.00% |
+
+**Random Forest Cross-Validation:** 100.00% mean accuracy ± 0.00% standard deviation across 5 stratified folds.
+
+**Evaluation note:** These results are based on synthetic vibration signals with clearly defined simulated fault patterns. They demonstrate experimental performance, not validated real-world motor fault detection accuracy.
+
+
 ## Key Features
 
 - Synthetic motor vibration signal generation.
@@ -39,6 +59,14 @@ flowchart TD
     G --> I["CSV and PDF Reports"]
     F --> J["Model Evaluation and Robustness Testing"]
 ```
+**Frequency-Domain Feature Relationships:**
+
+- Fundamental Frequency Amplitude is the FFT magnitude closest to 5 Hz (1×).
+- Harmonic Frequency Amplitude is the FFT magnitude closest to 10 Hz (2×).
+- Harmonic Ratio is calculated by dividing the harmonic amplitude by the fundamental amplitude.
+- If the fundamental amplitude is zero, the harmonic ratio is set to zero to avoid division by zero.
+
+The Harmonic Ratio is derived from the two FFT amplitudes, so these three features are mathematically related rather than independent. The rule-based classifier uses the Harmonic Ratio for misalignment detection, while the Random Forest classifier uses all seven extracted features.
 
 ### Processing Pipeline
 
@@ -57,6 +85,33 @@ flowchart TD
 | Imbalance | Simulated vibration caused by uneven mass distribution |
 | Misalignment | Simulated vibration caused by shaft misalignment |
 | Bearing Fault | Simulated impact-like vibration patterns |
+
+## Simulation Configuration
+
+EdgeGuard generates synthetic motor vibration signals using NumPy.
+
+**Signal parameters:**
+
+- Sampling frequency: 100 Hz.
+- Number of samples: 1,000 per signal.
+- Signal duration: 10 seconds.
+- Simulated shaft speed: 300 RPM (5 Hz fundamental frequency).
+- 1× shaft frequency: 5 Hz.
+- 2× shaft harmonic: 10 Hz.
+- Added Gaussian noise: Standard deviation of 0.005.
+
+The 1× and 2× components represent the fundamental shaft rotational frequency and its second harmonic, respectively.
+
+**Fault simulation methods:**
+
+- **Normal:** Low-amplitude 5 Hz sinusoidal vibration.
+- **Imbalance:** Increased vibration amplitude at the 1× shaft frequency.
+- **Misalignment:** Combined 1× and 2× shaft-frequency components.
+- **Bearing Fault:** Low-amplitude 1× vibration with repetitive simulated impact additions every 20 samples.
+
+All four conditions include Gaussian noise to introduce variation into the generated signals.
+
+These are simplified synthetic fault representations designed for algorithm development and testing, not physical motor measurements.
 
 ## Classification Methods
 
@@ -166,6 +221,14 @@ Average accuracy across the nine conditions:
 - Rule-Based Classifier: **95.28%**
 - Random Forest: **100.00%**
 
+**Training and Testing Strategy**
+
+The robustness experiment uses a separate training dataset containing 1,200 synthetic signals (300 per fault class). Unlike the baseline evaluation, the Random Forest model is trained on signals with randomly varied amplitude scales (0.8×–1.2×) and Gaussian noise standard deviations (0.005–0.04).
+
+The trained model is evaluated across nine fixed amplitude-noise combinations. Each combination contains 120 test signals (30 repetitions for each of the four fault classes), resulting in 1,080 test signals.
+
+Both the rule-based classifier and Random Forest are evaluated using the same test signals under identical conditions. This experiment assesses classification consistency across the selected simulated amplitude and noise variations.
+
 ### Interpretation and Limitations
 
 The baseline results indicate that both classifiers can distinguish the four simulated fault classes under the generated signal conditions. The noisy stress test and robustness experiment demonstrate how their performance changes under different noise and amplitude settings.
@@ -258,6 +321,13 @@ cd EdgeGuard
 
 ```bash
 python -m pip install -r requirements.txt
+```
+
+**Linux users:** Tkinter may not be included in the default Python installation. Install it using:
+
+```bash
+sudo apt update
+sudo apt install python3-tk
 ```
 
 ## Running the Project
