@@ -99,52 +99,93 @@ Uses seven extracted features:
 
 ## Dataset and Model Evaluation
 
-The baseline synthetic dataset contains 800 samples:
+EdgeGuard evaluates both rule-based and Random Forest classifiers using synthetic motor vibration signals representing four operating conditions.
+
+### Baseline Dataset
+
+The baseline dataset contains 800 samples:
 
 - 200 samples per motor condition.
-- 640 training samples.
-- 160 testing samples.
-- Seven features per sample.
+- 640 training samples (80%).
+- 160 testing samples (20%).
+- Seven statistical and frequency-domain features per sample.
+- Stratified data splitting with a fixed random state.
 
-Evaluation includes:
+### Baseline Model Performance
 
-- Accuracy
-- Macro Precision
-- Macro Recall
-- Macro F1-score
-- Confusion matrix
-- Five-fold cross-validation
-- Feature importance analysis
+| Metric | Rule-Based Classifier | Random Forest |
+|---|---:|---:|
+| Accuracy | 100.00% | 100.00% |
+| Macro Precision | 100.00% | 100.00% |
+| Macro Recall | 100.00% | 100.00% |
+| Macro F1-score | 100.00% | 100.00% |
 
-Generated evaluation files include:
+### Random Forest Cross-Validation
 
-- `evaluation_results.csv`
-- `model_comparison.csv`
-- `cross_validation_results.csv`
-- `ml_confusion_matrix.png`
-- `feature_importance.png`
+Five-fold stratified cross-validation produced:
 
-All reported metrics describe performance on simulated data, not real industrial motors.
+- Mean accuracy: **100.00%**
+- Standard deviation: **0.00%**
 
-## Robustness and Stress Testing
+### Noisy Stress Test
 
-EdgeGuard includes additional experiments to examine classifier performance under changing signal conditions.
+Both classifiers were evaluated on the same 400 noisy test signals, using additional noise with a standard deviation of 0.02 and amplitude scaling between 0.8× and 1.2×.
 
-The robustness evaluation considers:
+| Metric | Rule-Based Classifier | Random Forest |
+|---|---:|---:|
+| Accuracy | 100.00% | 96.25% |
+| Macro Precision | 100.00% | 96.74% |
+| Macro Recall | 100.00% | 96.25% |
+| Macro F1-score | 100.00% | 96.23% |
+
+The Random Forest showed reduced accuracy under this noisy test, primarily due to confusion between the Imbalance and Misalignment classes.
+
+### Robustness Evaluation
+
+A separate robustness experiment used a varied training dataset containing 1,200 samples and evaluated both classifiers under nine amplitude and noise combinations.
 
 - Amplitude scaling: 0.8×, 1.0× and 1.2×.
 - Noise standard deviation: 0.005, 0.02 and 0.04.
-- 300 training samples per motor condition for the robustness model.
-- 30 test repetitions per condition for each amplitude/noise combination.
+- 120 test signals per amplitude/noise combination.
+- 1,080 test signals in total.
 
-Both rule-based and Random Forest classifiers are evaluated.
+| Amplitude | Noise Std. Dev. | Rule-Based Accuracy | Random Forest Accuracy |
+|---|---:|---:|---:|
+| 0.8× | 0.005 | 95.00% | 100.00% |
+| 0.8× | 0.02 | 100.00% | 100.00% |
+| 0.8× | 0.04 | 93.33% | 100.00% |
+| 1.0× | 0.005 | 100.00% | 100.00% |
+| 1.0× | 0.02 | 100.00% | 100.00% |
+| 1.0× | 0.04 | 85.00% | 100.00% |
+| 1.2× | 0.005 | 100.00% | 100.00% |
+| 1.2× | 0.02 | 100.00% | 100.00% |
+| 1.2× | 0.04 | 84.17% | 100.00% |
 
-Generated outputs include:
+Average accuracy across the nine conditions:
 
+- Rule-Based Classifier: **95.28%**
+- Random Forest: **100.00%**
+
+### Interpretation and Limitations
+
+The baseline results indicate that both classifiers can distinguish the four simulated fault classes under the generated signal conditions. The noisy stress test and robustness experiment demonstrate how their performance changes under different noise and amplitude settings.
+
+The perfect baseline and robustness scores should be interpreted cautiously. The synthetic classes are relatively well-separated by the features and patterns used during data generation. These results do not establish equivalent accuracy on real industrial motors.
+
+All experiments use synthetic vibration data. Validation using real motor sensor measurements, different operating speeds, loads and physical fault conditions is required before practical deployment.
+
+### Generated Evaluation Files
+
+- `model_comparison.csv`
+- `cross_validation_results.csv`
+- `stress_test_results.csv`
 - `robustness_results.csv`
+- `ml_confusion_matrix.png`
+- `feature_importance.png`
+- `stress_confusion_matrix.png`
+- `stress_rule_confusion_matrix.png`
+- `stress_test_comparison.png`
 - `robustness_comparison.png`
-
-The experiments help identify how noise and amplitude variation affect fault classification.
 
 ## Application Screenshots
 
@@ -198,7 +239,7 @@ The experiments help identify how noise and amplitude variation affect fault cla
 
 ### Prerequisites
 
-- Python 3.12 or later
+- Python 3.12
 - Git
 
 ### 1. Clone the repository
@@ -254,8 +295,6 @@ Run the test suite:
 ```bash
 python -m pytest test_edgeguard.py -q
 ```
-
-**Latest verified local test result: 27 passed.**
 
 ## Continuous Integration
 

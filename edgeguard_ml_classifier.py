@@ -356,7 +356,7 @@ def main():
 
     for row in X_test:
 
-        rms, peak, std_dev, crest, harmonic_ratio, fundamental, harmonic  = row
+        rms, peak, std_dev, crest, harmonic_ratio, fundamental, harmonic = row
 
         prediction = classify_fault(
             rms,
@@ -424,7 +424,7 @@ def main():
 
     for row in X_stress:
 
-        rms, peak, std_dev, crest, harmonic_ratio = row
+        rms, peak, std_dev, crest, harmonic_ratio, fundamental, harmonic = row
 
         prediction = classify_fault(
             rms,
