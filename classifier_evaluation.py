@@ -37,7 +37,7 @@ def run_evaluation():
 
             t, signal, _, _, _ = generate_motor_data(actual)
 
-            rms, peak, std_dev, crest, harmonic_ratio = (
+            rms, peak, std_dev, crest, harmonic_ratio, fundamental, harmonic = (
                 extract_features(signal)
             )
 

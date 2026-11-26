@@ -24,7 +24,15 @@ def extract_features(signal):
         harmonic / fundamental if fundamental > 0 else 0
     )
 
-    return rms, peak, std_dev, crest_factor, harmonic_ratio
+    return (
+    rms,
+    peak,
+    std_dev,
+    crest_factor,
+    harmonic_ratio,
+    float(fundamental),
+    float(harmonic)
+    )
 
 
 def classify_fault(rms, peak, crest, harmonic_ratio):
@@ -61,7 +69,7 @@ def main():
 
         t, signal, _, _, _ = generate_motor_data(actual)
 
-        rms, peak, std_dev, crest, harmonic_ratio = (
+        rms, peak, std_dev, crest, harmonic_ratio, fundamental, harmonic = (
             extract_features(signal)
         )
 

@@ -44,13 +44,18 @@ class TestEdgeGuard(unittest.TestCase):
         _, signal, _, _, _ = generate_motor_data("NORMAL")
 
         features = extract_features(signal)
-        rms, peak, std_dev, crest, harmonic_ratio = features
+        rms, peak, std_dev, crest, harmonic_ratio, fundamental, harmonic = (
+            extract_features(signal)
+        )
 
         self.assertTrue(all(np.isfinite(value) for value in features))
         self.assertGreater(rms, 0)
         self.assertGreaterEqual(peak, rms)
         self.assertGreater(crest, 0)
         self.assertGreaterEqual(harmonic_ratio, 0)
+        self.assertGreaterEqual(fundamental, 0)
+        self.assertGreaterEqual(harmonic, 0)
+        self.assertEqual(len(features), 7)
 
     def test_fault_classification(self):
         conditions = [
@@ -64,7 +69,7 @@ class TestEdgeGuard(unittest.TestCase):
             for _ in range(5):
                 _, signal, _, _, _ = generate_motor_data(condition)
 
-                rms, peak, std_dev, crest, harmonic_ratio = (
+                rms, peak, std_dev, crest, harmonic_ratio, fundamental, harmonic = (
                     extract_features(signal)
                 )
 
@@ -338,7 +343,7 @@ class TestEdgeGuard(unittest.TestCase):
             with patch.object(
                 evaluation,
                 "extract_features",
-                return_value=(0.1, 0.2, 0.05, 2.0, 0.01)
+                return_value=(0.1, 0.2, 0.05, 2.0, 0.01, 0.03, 0.02)
             ):
 
                 with patch.object(
@@ -377,7 +382,7 @@ class TestEdgeGuard(unittest.TestCase):
             with patch.object(
                 evaluation,
                 "extract_features",
-                return_value=(0.1, 0.2, 0.05, 2.0, 0.01)
+                return_value=(0.1, 0.2, 0.05, 2.0, 0.01, 0.03, 0.02)
             ):
 
                 with patch.object(

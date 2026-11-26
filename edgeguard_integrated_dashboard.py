@@ -263,7 +263,7 @@ class EdgeGuardDashboard:
 
         t, signal, _, _, _ = generate_motor_data(condition)
 
-        rms, peak, std_dev, crest, harmonic_ratio = (
+        rms, peak, std_dev, crest, harmonic_ratio, fundamental, harmonic = (
             extract_features(signal)
         )
 

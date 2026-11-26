@@ -142,7 +142,7 @@ def evaluate_robustness(model):
 
                     features = extract_signal_features(signal)
 
-                    rms, peak, std_dev, crest, harmonic_ratio = (
+                    rms, peak, std_dev, crest, harmonic_ratio, fundamental, harmonic = (
                         features
                     )
 
