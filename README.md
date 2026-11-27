@@ -108,7 +108,7 @@ The 1× and 2× components represent the fundamental shaft rotational frequency 
 - **Normal:** Low-amplitude 5 Hz sinusoidal vibration.
 - **Imbalance:** Increased vibration amplitude at the 1× shaft frequency.
 - **Misalignment:** Combined 1× and 2× shaft-frequency components.
-- **Bearing Fault:** Low-amplitude 1× vibration with repetitive simulated impact additions every 20 samples.
+- **Bearing Fault:** Low-amplitude 1× vibration with simulated impact additions every 20 samples (every 0.2 seconds, or 5 Hz at a 100 Hz sampling rate). This represents one impact per simulated shaft revolution in this simplified model.
 
 All four conditions include Gaussian noise to introduce variation into the generated signals.
 
@@ -230,7 +230,7 @@ The robustness experiment uses a separate training dataset containing 1,200 synt
 
 The trained model is evaluated across nine fixed amplitude-noise combinations. Each combination contains 120 test signals (30 repetitions for each of the four fault classes), resulting in 1,080 test signals.
 
-**Reproducibility:** NumPy's random seed was set to 42 for the robustness experiment, and the Random Forest classifier used `random_state=42`. This makes the experiment reproducible under the same software environment and configuration.
+**Reproducibility:** NumPy's random seed is set to 42 for the baseline evaluation and robustness experiment, and 2026 for the noisy stress test. The Random Forest classifier uses `random_state=42`. These settings support reproducibility under the same software environment and configuration.
 
 Both the rule-based classifier and Random Forest are evaluated using the same test signals under identical conditions. This experiment assesses classification consistency across the selected simulated amplitude and noise variations.
 
@@ -413,6 +413,7 @@ EdgeGuard/
 ├── fault_classifier.py
 ├── fault_visualization.py
 ├── motor_fault_simulator.py
+├── LICENSE
 ├── requirements.txt
 └── test_edgeguard.py
 ```
