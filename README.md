@@ -22,6 +22,7 @@ The project combines signal processing, rule-based fault classification, machine
 | Baseline Macro F1-Score | 100.00% | 100.00% |
 | Noisy Stress Test Accuracy | 100.00% | 96.25% |
 | Robustness Average Accuracy | 95.28% | 100.00% |
+**Robustness note:** The Random Forest was trained on a separate dataset with varied amplitude and noise levels. The rule-based classifier used its original fixed thresholds without additional training.
 
 **Random Forest Cross-Validation:** 100.00% mean accuracy ± 0.00% standard deviation across 5 stratified folds.
 
@@ -66,7 +67,7 @@ flowchart TD
 - Harmonic Ratio is calculated by dividing the harmonic amplitude by the fundamental amplitude.
 - If the fundamental amplitude is zero, the harmonic ratio is set to zero to avoid division by zero.
 
-The Harmonic Ratio is derived from the two FFT amplitudes, so these three features are mathematically related rather than independent. The rule-based classifier uses the Harmonic Ratio for misalignment detection, while the Random Forest classifier uses all seven extracted features.
+The Harmonic Ratio is derived from the two FFT amplitudes, so these three features are mathematically related rather than independent. Similarly, RMS and Standard Deviation can be nearly identical for zero-mean signals. Therefore, the seven extracted features are not entirely independent. The rule-based classifier uses the Harmonic Ratio for misalignment detection, while the Random Forest classifier uses all seven extracted features.
 
 ### Processing Pipeline
 
@@ -184,6 +185,8 @@ Five-fold stratified cross-validation produced:
 
 ### Noisy Stress Test
 
+**Training note:** The Random Forest model was trained on the clean baseline synthetic dataset and evaluated on the perturbed stress-test dataset (additional noise and amplitude variation). It was not retrained on the stress-test data.
+
 Both classifiers were evaluated on the same 400 noisy test signals, using additional noise with a standard deviation of 0.02 and amplitude scaling between 0.8× and 1.2×.
 
 | Metric | Rule-Based Classifier | Random Forest |
@@ -226,6 +229,8 @@ Average accuracy across the nine conditions:
 The robustness experiment uses a separate training dataset containing 1,200 synthetic signals (300 per fault class). Unlike the baseline evaluation, the Random Forest model is trained on signals with randomly varied amplitude scales (0.8×–1.2×) and Gaussian noise standard deviations (0.005–0.04).
 
 The trained model is evaluated across nine fixed amplitude-noise combinations. Each combination contains 120 test signals (30 repetitions for each of the four fault classes), resulting in 1,080 test signals.
+
+**Reproducibility:** NumPy's random seed was set to 42 for the robustness experiment, and the Random Forest classifier used `random_state=42`. This makes the experiment reproducible under the same software environment and configuration.
 
 Both the rule-based classifier and Random Forest are evaluated using the same test signals under identical conditions. This experiment assesses classification consistency across the selected simulated amplitude and noise variations.
 
@@ -366,6 +371,9 @@ Run the test suite:
 python -m pytest test_edgeguard.py -q
 ```
 
+The project includes **27 automated tests** using Pytest, covering signal generation, feature extraction, fault classification, classifier evaluation, vibration metrics, dashboard monitoring states, database operations, and CSV/PDF report generation.
+
+
 ## Continuous Integration
 
 GitHub Actions automatically executes the automated test suite:
@@ -437,3 +445,7 @@ BITM Ballari | 2027
 **Project:** EdgeGuard – Motor Fault Detection and Monitoring System
 
 [GitHub Repository](https://github.com/Sharonhoney05/EdgeGuard)
+
+## License
+
+This project is licensed under the Zero-Clause BSD License. See [LICENSE](LICENSE) for details.
